@@ -1,0 +1,40 @@
+#!/bin/bash
+# About this script: It is aimed for the backup server where there is certain directory where each day is added new subdirectory with recent (daily) backups.
+# When cronjobs (mentioned below) are set to run this script, the script will move weekly, monthly and annually the most recent directory to a special second directory in order to maintain like 3 weekly backups, 11 monthly backups and 6 annual backups beside 6 daily backups in the maindir
+# chmod +x /path/to/script
+# Setup a cronjobs like bellow:
+# @weekly root /bin/bash /root/scripts/backups_weeklymonthlyannually weeklyyes monthlyno annuallyno
+# @monthly root /bin/bash /root/scripts/backups_weeklymonthlyannually weeklyno monthlyyes annuallyno
+# @annually root /bin/bash /root/scripts/backups_weeklymonthlyannually weeklyno monthlyno annuallyyes
+
+# next two have to end by the slash
+maindir=/backup/isp/
+seconddir=/backup/isp2/
+
+mkdir -p $maindir "$seconddir"weekly "$seconddir"monthly "$seconddir"annually 2>/dev/null
+mostrecentdir=$(ls -A1 $maindir|grep -v "\."|head -n 1)
+#echo "latest dir to handle: $mostrecentdir"
+# Check if amount of backups is too low to prevent deleting all available backups in case new baclups not being added by an error
+if [[ "$(ls -A1 "$maindir"|grep -v "\."|wc -l)" -lt "2" ]];then toolowbackupsdaily=1;fi
+if [[ "$(ls -A1 "$seconddir"weekly/|grep -v "\."|wc -l)" -lt "2" ]];then toolowbackupsweekly=1;fi
+if [[ "$(ls -A1 "$seconddir"monthly/|grep -v "\."|wc -l)" -lt "2" ]];then toolowbackupsmonthly=1;fi
+if [[ "$(ls -A1 "$seconddir"annually/|grep -v "\."|wc -l)" -lt "2" ]];then toolowbackupsannually=1;fi
+# Delete older backups to keep only around 3 weekly backups, 11 monthly backups and 6 annual backups
+if [[ "$toolowbackupsdaily" != "1" ]];then find "$maindir" -ctime +6 -delete;fi
+if [[ "$toolowbackupsweekly" != "1" ]];then find "$seconddir"weekly/ -ctime +27 -delete;fi
+if [[ "$toolowbackupsmonthly" != "1" ]];then find "$seconddir"monthly/ -ctime +363 -delete;fi
+if [[ "$toolowbackupsannually" != "1" ]];then find "$seconddir"annually/ -ctime +2178 -delete;fi
+
+if [[ "$3" == *"yes"* ]];then
+mv "$maindir""$mostrecentdir" "$seconddir"annually/
+fi
+
+if [[ "$2" == *"yes"* ]];then
+mv "$maindir""$mostrecentdir" "$seconddir"monthly/
+fi
+
+if [[ "$1" == *"yes"* ]];then
+mv "$maindir""$mostrecentdir" "$seconddir"weekly/
+fi
+
+#

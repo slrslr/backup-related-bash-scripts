@@ -1,7 +1,7 @@
 #!/bin/bash
 # About this script: It is aimed for the backup server where there is certain directory where each day is added new subdirectory with recent (daily) backups.
 # When cronjobs (mentioned below) are set to run this script, the script will move weekly, monthly and annually the most recent directory to a special second directory in order to maintain like 3 weekly backups, 11 monthly backups and 6 annual backups beside 6 daily backups in the maindir
-# chmod +x /path/to/script
+# chmod 750 /path/to/script
 # Setup a cronjobs like bellow:
 # @weekly root /bin/bash /root/scripts/backups_weeklymonthlyannually weeklyyes monthlyno annuallyno
 # @monthly root /bin/bash /root/scripts/backups_weeklymonthlyannually weeklyno monthlyyes annuallyno
@@ -12,9 +12,9 @@ maindir=/backup/isp/
 seconddir=/backup/isp2/
 
 mkdir -p $maindir "$seconddir"weekly "$seconddir"monthly "$seconddir"annually 2>/dev/null
-mostrecentdir=$(ls -A1 $maindir|grep -v "\."|head -n 1)
+mostrecentdir=$(ls -tA1 $maindir|grep -v "\."|head -n 1)
 #echo "latest dir to handle: $mostrecentdir"
-# Check if amount of backups is too low to prevent deleting all available backups in case new baclups not being added by an error
+# Check if amount of backups is too low to prevent deleting all available backups in case new backups not being added by an error
 if [[ "$(ls -A1 "$maindir"|grep -v "\."|wc -l)" -lt "2" ]];then toolowbackupsdaily=1;fi
 if [[ "$(ls -A1 "$seconddir"weekly/|grep -v "\."|wc -l)" -lt "2" ]];then toolowbackupsweekly=1;fi
 if [[ "$(ls -A1 "$seconddir"monthly/|grep -v "\."|wc -l)" -lt "2" ]];then toolowbackupsmonthly=1;fi

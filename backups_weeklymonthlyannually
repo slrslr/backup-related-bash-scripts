@@ -1,6 +1,8 @@
 #!/bin/bash
-# About this script: It is aimed for the backup server where there is certain directory where each day is added new subdirectory with recent (daily) backups.
-# When cronjobs (mentioned below) are set to run this script, the script will move weekly, monthly and annually the most recent directory to a special second directory in order to maintain like 3 weekly backups, 11 monthly backups and 6 annual backups beside 6 daily backups in the maindir
+# About this script: It is aimed for the Linux computer with certain directory to which are placed new (backup) folders daily.
+# When cronjobs (mentioned below) are set to run this script, the script will move the daily sub-folders to weekly to a special folder with weekly, monthly, annually subfolders and retain defined amount of most recent backup for each folder..
+# By default it is 3 weekly backups, 11 monthly backups and 6 annual backups beside 6 daily backups in the maindir
+#
 # chmod 750 /path/to/script
 # Setup a cronjobs like bellow:
 # @weekly root /bin/bash /root/scripts/backups_weeklymonthlyannually weeklyyes monthlyno annuallyno

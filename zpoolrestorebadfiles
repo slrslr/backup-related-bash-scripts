@@ -1,0 +1,69 @@
+#!/bin/bash
+#set -xe
+rm -f paths_*
+
+echo -e "----- This script should guide you through the process of replacing zpool corruped files by the files from backup drives -----"
+
+echo -e "\nconnect/mount drives that contains your zfs drive/s backups and hit any key"
+read -r continue
+
+echo -e "Listing mountpoints:"
+df -h|grep -Ev "tmpfs|loop"
+
+echo -e "\nNUMBER OF BACKUP DRIVES MOUNTPOINTS
+Your zpool is backed up to some cold storage backup drives, when you have connected these drives, the script needs to know the number of mount points these backup drives are using.
+Usually if it is two drives, it would be 2 mount points and you would enter number 2 and hit enter:"
+read -r backupdrivesnumber
+
+##echo -e "\nWHAT WE NEED TO DO\nWe need to adjust bad files/directories paths to fit the paths on the backup drive/s.
+##By replacing first root folder of each path by the mountpoint of a relevant backup drive.
+##Example: /zfsmountpoint/Music/file.mp3 /mnt/backupdrive/Music/file.mp3 (/zfsmountpoint/ -> /mnt/backupdrive/)
+##hit any key to continue"
+##read continue
+
+echo -e "\nListing bad files/paths per \"sudo zpool status -v\" command:"
+sudo zpool status -v|grep -A 9999999 "Permanent errors have been detected in the following"|egrep "/"|egrep -v "<"|sed -e "s/.* \//\//g" > paths
+cat paths
+
+echo -e "\n\nNow enter $backupdrivesnumber pairs of the root directories. For example, if i see above an corrupted file with path /mydataset/music/song.mp3 and i have backup at /mnt/bckpdrive/music/song.mp3, then below i will define the pair like this:\na) zfs root directory as /mydataset/ and b) backup folder as /mnt/bckpdrive/. The script will then use this to copy the file from backup drive path to zfs drive path."
+
+n=1;while [ $n -le $backupdrivesnumber ];do
+echo -e "\nPAIR #$n :\n"
+echo -e "Enter zfs root directory used in above displayed corrupted files (if multiple dirs. are displayed, you will be prompted to work with these later in next pair).
+Use trailing slash! Example: /zfsmountpoint1/
+(Do not be worried to enter wrong path, you will be presented with the resulting paths and always prompted, you can cancel anytime)"
+read replacement
+echo -e "Enter backup drive mountpoint or other directory on the backup drive that corresponds to the zfs drive root directory entered in previous step.
+Use trailing slash! Example: /mnt/bckpdrive/"
+read replacementby
+grep "$replacement" paths >> paths_zfs$n;cat paths_zfs$n|sed -e "s|$replacement|$replacementby|g" > paths_bkp$n
+echo -e "Hit any key to see the results:\n\n"
+read continue
+echo -e "RESULTS for pair $n\n\n
+zfs paths:\n
+$(cat paths_zfs$n)\n\n
+backup paths:\n
+$(cat paths_bkp$n)\n"
+echo "Is that looking good? A) if you want to use this output to copy backup files to zfs files, type \"y\" key and hit enter (copy command will prompt you before each replacement and expect y or n key.
+B) move to pair #2 forgetting the output and pair above: hit Enter"
+read continue
+if [[ "$continue" == "y" ]];then
+c="1"
+cmax=$(grep -c / paths_bkp$n)
+while [[ $c -le $cmax ]];do
+echo -e "DELETE DESTINATION? Are you sure you want to delete destination \"$(sed -n "$c,1p" paths_zfs$n)\" contents before copying from source? Hit enter if yes"
+read delproceed
+if [[ "$delproceed" == "" ]];then find "$(sed -n "$c,1p" paths_zfs$n)" -delete;fi
+# rm --recursive --interactive=once "$(sed -n "$c,1p" paths_zfs$n)"
+cp --verbose --interactive --recursive --preserve "$(sed -n "$c,1p" paths_bkp$n)" "$(sed -n "$c,1p" paths_zfs$n)"
+c=$(( c+1 ))
+done
+
+fi
+n=$(( n+1 ))
+done
+
+echo -e "Done. Showing zpool status -v:\n$(sudo zpool status -v)"
+
+rm -f paths_*
+exit

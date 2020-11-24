@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# echo -e "Backup all script files from /root with higher than 677 permission and mail them out as backup\\nMUTT must be installed in order to mail out backup"
+
+maill=some@mail.com
+
+# find files and pack it
+find /root/* -type f -perm 700 -exec tar rvf rootscripts$(hostname).tar {} \; 1>/dev/null 2>/dev/null
+gzip rootscripts$(hostname).tar 1>/dev/null
+# ls -lh | grep rootscripts
+cat rootscripts$(hostname).tar.gz | base64 > rootscripts$(hostname).tar.gz_base64
+
+# mail it
+file=rootscripts$(hostname).tar.gz_base64
+echo "$(hostname) root scripts backup (scriptname: bckp_and_mail_scripts_inroot). Directory structure is not retained alas." | mutt -a $file -s "Root scripts $(hostname)" -- $maill
+
+# remove arcive after mailing
+# echo "Removing backup file after mailing. Done"
+rm -rf rootscripts$(hostname).tar.gz*
+#

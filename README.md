@@ -4,6 +4,8 @@
 
 **bckp_and_mail_scripts_inroot** - if you are storing important bash scripts in /root directory, this script may try to archive these and send the archive to the defined mailbox
 
+**rsync.sh** - if input remote SSH details, script can do several things a) setup password-less SSH key access, b) backup local directory to remote SSh directory using rsync, c) delete remote server backups older than X hours
+
 **rsync_backup_to_remote_and_retention.sh** - Each time this script is run, user defined directory and its subdirectories of the local Linux computer are mirrored using rsync over SSH to remote Linux server. User defined number of previous backups are retained and exceeding oldest backups are removed.
 
 **zpoolrestorebadfiles** - If you do not want to bother manually delete/copy the permanent erroneous/corrupted files (per "sudo zpool status -v") from backup to your ZFS filesystem. Then this script will parse the zpool status output and prompt you about the removal/replacement of each file.

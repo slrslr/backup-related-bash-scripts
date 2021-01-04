@@ -5,9 +5,9 @@
 #
 # chmod 750 /path/to/script
 # Setup a cronjobs like bellow:
-# @weekly root /bin/bash /root/scripts/backups_weeklymonthlyannually weeklyyes monthlyno annuallyno
-# @monthly root /bin/bash /root/scripts/backups_weeklymonthlyannually weeklyno monthlyyes annuallyno
-# @annually root /bin/bash /root/scripts/backups_weeklymonthlyannually weeklyno monthlyno annuallyyes
+# @weekly /bin/bash /root/scripts/backups_weeklymonthlyannually weeklyyes monthlyno annuallyno
+# @monthly /bin/bash /root/scripts/backups_weeklymonthlyannually weeklyno monthlyyes annuallyno
+# @annually /bin/bash /root/scripts/backups_weeklymonthlyannually weeklyno monthlyno annuallyyes
 
 # next two have to end by the slash
 maindir=/backup/isp/

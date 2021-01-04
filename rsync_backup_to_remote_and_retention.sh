@@ -30,7 +30,7 @@ annually=1
 # @weekly root /bin/bash /path/to/thisscript weekly
 # @monthly root /bin/bash /path/to/thisscript monthly
 # @annually root /bin/bash /path/to/thisscript annually
-# the parameter at the end of the commands is only necessary to put the backup into appropriate directory and to preserve only defined number of backups
+# the parameter at the end of the commands is only necessary to put the backup into appropriate directory and to preserve only defined number of backups. It may be needed to remove "root " from the commands if the cronjob is put into "crontab -e" not in the /etc/cron.*/file
 
 ##############################################
 
